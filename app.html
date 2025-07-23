@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>HITUNG SUARA CALON KETUA & PENGURUS HARIAN IKATAN BIDAN INDONESIA
+RANTING TAMBAKBOYO CABANG TUBAN
+MASA BAKTI TAHUN 2023-2028</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+    }
+
+    .calon-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .calon {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 220px;
+    }
+
+    .nama {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .suara {
+      font-size: 2.5rem;
+      color: #007BFF;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-tambah {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-reset {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .grafik {
+      margin-top: 40px;
+      text-align: left;
+      max-width: 600px;
+      margin-inline: auto;
+    }
+
+    .bar {
+      background-color: #007BFF;
+      height: 20px;
+      margin-bottom: 10px;
+      color: white;
+      text-align: right;
+      padding-right: 10px;
+      border-radius: 6px;
+    }
+
+    .label {
+      margin-bottom: 5px;
+    }
+
+    .foto-calon {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  border: 2px solid #ffffff;
+}
+
+  </style>
+</head>
+<body>
+
+  <h1>🗳️ HITUNG SUARA CALON KETUA & PENGURUS HARIAN IKATAN BIDAN INDONESIA
+RANTING TAMBAKBOYO CABANG TUBAN
+MASA BAKTI TAHUN 2023-2028 🗳️</h1>
+
+  <div class="calon-container" id="calon-container"></div>
+
+  <div style="margin-top: 30px;">
+    <button class="btn-reset" onclick="resetSemua()">🔄 Reset Semua</button>
+  </div>
+
+  <div class="grafik">
+    <h2>📊 Grafik Suara</h2>
+    <div id="grafik-bar"></div>
+  </div>
+
+  <script>
+    // Daftar calon
+    const calonList = [
+      { id: 1, nama: "Ratna Nurhidayatiningrum, A.Md.Keb", suara: 0, foto:"1.png" },
+      { id: 2, nama: "Bdn. Lina Ariyanti, S.Keb", suara: 0, foto:"2.png" },
+      { id: 3, nama: "Bdn. Siti Ima'tul Nikmah, S.Keb", suara: 0, foto:"3.png" },
+      { id: 4, nama: "Bdn. Nurul Yulianti, S.ST", suara: 0, foto:"4.png" },
+      { id: 5, nama: "Siti Chotimah, A.Md.Keb", suara: 0, foto:"5.png" }
+    ];
+
+    // Muat dari localStorage kalau ada
+    function loadSuara() {
+      const data = localStorage.getItem("suara");
+      if (data) {
+        const parsed = JSON.parse(data);
+        parsed.forEach((item, idx) => {
+          calonList[idx].suara = item.suara;
+        });
+      }
+    }
+
+    // Simpan ke localStorage
+    function simpanSuara() {
+      localStorage.setItem("suara", JSON.stringify(calonList));
+    }
+
+    // Tambah suara
+    function tambahSuara(id) {
+      const calon = calonList.find(c => c.id === id);
+      if (calon) {
+        calon.suara += 1;
+        simpanSuara();
+        render();
+      }
+    }
+
+    // Reset semua suara
+    function resetSemua() {
+      if (!confirm("Yakin ingin mereset semua suara?")) return;
+      calonList.forEach(c => c.suara = 0);
+      simpanSuara();
+      render();
+    }
+
+    // Render tampilan calon dan hasil suara
+    function render() {
+      const container = document.getElementById("calon-container");
+      container.innerHTML = "";
+
+      calonList.forEach(calon => {
+        const div = document.createElement("div");
+        div.className = "calon";
+        div.innerHTML = `
+          <img src="${calon.foto}" alt="${calon.nama}" class="foto-calon">
+          <div class="nama">${calon.nama}</div>
+          <div class="suara" id="suara-${calon.id}">${calon.suara}</div>
+          <button class="btn-tambah" onclick="tambahSuara(${calon.id})">+1 Suara</button>
+        `;
+        container.appendChild(div);
+      });
+
+      renderGrafik();
+    }
+
+    // Render grafik batang
+    function renderGrafik() {
+      const total = calonList.reduce((sum, c) => sum + c.suara, 0);
+      const grafik = document.getElementById("grafik-bar");
+      grafik.innerHTML = "";
+
+      calonList.forEach(calon => {
+        const persen = total > 0 ? (calon.suara / total) * 100 : 0;
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <div class="label">${calon.nama} (${calon.suara} suara - ${persen.toFixed(1)}%)</div>
+          <div class="bar" style="width: ${persen}%; background-color: ${warnaBar(calon.id)}">${calon.suara > 0 ? calon.suara : ""}</div>
+        `;
+        grafik.appendChild(div);
+      });
+    }
+
+    // Warna batang berdasarkan id
+    function warnaBar(id) {
+      const warna = ["#007BFF", "#17a2b8", "#ffc107", "#28a745", "#dc3545"];
+      return warna[(id - 1) % warna.length];
+    }
+
+    // Inisialisasi
+    loadSuara();
+    render();
+  </script>
+
+</body>
+</html>
